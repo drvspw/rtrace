@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     container:
-      image: ghcr.io/drvspw/rtrace-build # erlang:22.2.3
+      image: ghcr.io/drvspw/erlang:22.2.3
 
     steps:
     - uses: actions/checkout@v1
