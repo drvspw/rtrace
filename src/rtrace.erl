@@ -1,14 +1,32 @@
+%%-------------------------------------------------------------------------------------------
+%% Copyright (c) 2021 Venkatakumar Srinivasan
+%%
+%% Licensed under the Apache License, Version 2.0 (the "License");
+%% you may not use this file except in compliance with the License.
+%% You may obtain a copy of the License at
+%%
+%%     http://www.apache.org/licenses/LICENSE-2.0
+%%
+%% Unless required by applicable law or agreed to in writing, software
+%% distributed under the License is distributed on an "AS IS" BASIS,
+%% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+%% See the License for the specific language governing permissions and
+%% limitations under the License.
+%%
+%% @author Venkatakumar Srinivasan
+%% @since February 14, 2021
+%%
+%%-------------------------------------------------------------------------------------------
 -module(rtrace).
 
 %% api
 -export([
-         get_env/1,
-         get_env/2,
-         current_time/0,
-         is_pid_alive/1,
-         priv_dir/0,
-         get_host_fqdn/0,
-         log_level/1
+         uuid/0,
+
+         trace_calls/2,
+         trace_calls/3,
+
+         priv_dir/0
         ]).
 
 %% Application behaviour and callbacks
@@ -25,21 +43,23 @@
 %% Supervisor callbacks
 -export([init/1]).
 
+-include_lib("kernel/include/logger.hrl").
+-include("rtrace.hrl").
+
 -define(SERVER, ?MODULE).
 
 %%%-------------------------------------------------------------------
 %% @doc rtrace public API
 %% @end
 %%%-------------------------------------------------------------------
-get_env(EnvVar) ->
-  get_env(EnvVar, undefined).
+trace_calls(Mod, Fun) ->
+  trace_calls(Mod, Fun, ?RTRACE_DEFAULT_CALLS).
 
-get_env(EnvVar, DefaultValue) ->
-  {ok, App} = application:get_application(?MODULE),
-  case application:get_env(App, EnvVar) of
-    undefined -> DefaultValue;
-    V -> V
-  end.
+trace_calls(Mod, Fun, Max) ->
+  rtrace_tracer:start_trace(Mod, Fun, Max).
+
+uuid() ->
+  list_to_binary(uuidv4:to_string(uuidv4:new())).
 
 priv_dir() ->
   case code:priv_dir(?MODULE) of
@@ -49,23 +69,6 @@ priv_dir() ->
     PrivDir -> filename:absname(PrivDir)
   end.
 
-current_time() ->
-  {Mega, Sec, Micro} = os:timestamp(),
-  (Mega * 1000000 + Sec) * 1000000 + Micro.
-
-is_pid_alive(Pid) when node(Pid) =:= node() ->
-  is_process_alive(Pid);
-is_pid_alive(Pid) ->
-  lists:member(node(Pid), nodes())
-    andalso (rpc:call(node(Pid), erlang, is_process_alive, [Pid]) =:= true).
-
-get_host_fqdn() ->
-  {ok, HostName} = inet:gethostname(),
-  {ok, {hostent, FullHostName, _, inet, _, _}} = inet:gethostbyname(HostName),
-  {ok, FullHostName}.
-
-log_level(Level) ->
-  logger:set_primary_config(level, Level).
 %%--------------------------------------------------------------------
 
 %%%-------------------------------------------------------------------
@@ -91,17 +94,43 @@ start_link() ->
 %%====================================================================
 %% Supervisor callbacks
 %%====================================================================
-%% child_spec() = #{ id => child_name,
-%%                   start => {child_module, child_start_link_fun, []},
-%%                   restart => permanent,
-%%                   shutdown => 2000,
-%%                   type => worker,
-%%                   modules => [child_module]
-%%                  }
-
 init([]) ->
+  ?LOG_INFO("Starting a new supervisor"),
   RestartStrategy = {one_for_one, 4, 3600},
-  Children = [], %% [ child_spec() ]
+
+  %% ets
+  Ets = #{id => rtrace_ets,
+          start => {rtrace_ets, start_link, []},
+          restart => permanent,
+          shutdown => 2000,
+          type => worker,
+          modules => [rtrace_ets]
+         },
+
+  %% http listener
+  Port = application:get_env(?MODULE, http_port, ?RTRACE_PORT),
+  Options = [
+             {ip, {127, 0, 0, 1}},
+             {port, Port},
+             {callback, rtrace_http}
+            ],
+  HttpListener = #{id => rtrace_http,
+                   start => {elli, start_link, [Options]},
+                   restart => permanent,
+                   shutdown => 2000,
+                   type => worker,
+                   modules => [elli]
+                  },
+
+  %% tracer
+  Tracer = #{ id => rtrace_tracer,
+              start => {rtrace_tracer, start_link, []},
+              restart => permanent,
+              shutdown => 2000,
+              type => worker,
+              modules => [rtrace_tracer]},
+
+  Children = [Ets, HttpListener, Tracer], %% [ child_spec() ]
   {ok, {RestartStrategy, Children}}.
 
 %%--------------------------------------------------------------------
@@ -109,17 +138,3 @@ init([]) ->
 %%=========================================================================
 %% Private functions
 %%=========================================================================
-
-%%=========================================================================
-%% Unit Test Suite
-%%=========================================================================
--ifdef(TEST).
-
--include_lib("eunit/include/eunit.hrl").
-
-suite_test_() ->
-  [
-   ?_assert(true)
-  ].
-
--endif.

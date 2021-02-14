@@ -9,11 +9,13 @@ Add `rtrace` as a dependency in `rebar.config`
 	]}.
 ```
 
-If not using `hex.pm`
+By default, the application listens on port 15000 for incoming api requests. This port can be customized by setting `http_port` value in `sys.config`
 ```erlang
-{deps, [
-	{rtrace, {git, "https://github.com/drvspw/rtrace.git", {tag, "<latest release>"}}}
-	]}.
+[
+	{rtrace, [
+		{http_port, 17000} %% another port
+		]}
+].
 ```
 
 ### Contributing

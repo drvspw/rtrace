@@ -7,7 +7,7 @@
    [kernel,
     stdlib,
     recon,
-    uuid,
+    uuidv4,
     jsone,
     elli
    ]},
@@ -15,7 +15,6 @@
   {env,[]},
   {modules, []},
 
-  {contributors, []},
   {licenses, ["Apache 2.0"]},
   {links, [{"Github", "https://github.com/drvspw/rtrace.git"}]}
  ]}.
