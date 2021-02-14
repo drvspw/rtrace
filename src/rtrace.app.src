@@ -1,5 +1,5 @@
 {application, rtrace,
- [{description, "Erlang call tracing application"},
+ [{description, "Erlang function call tracing application"},
   {vsn, {cmd, "./ebump current"}},
   {registered, []},
   {mod, {'rtrace', []}},

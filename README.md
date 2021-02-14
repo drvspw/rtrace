@@ -1,5 +1,5 @@
 ### rtrace
-A wrapper for [recon](Erlang call tracer) library. The application also exposes a REST api for call tracing. Although `recon` supports various trace patterns, this api allows on tracing function calls with just module and function name for a maximum of 100 calls.
+A wrapper for [recon](https://github.com/ferd/recon/) library. This application also exposes a REST api for call tracing. Although `recon` supports various trace patterns, this api allows on tracing function calls with just module and function name for a maximum of 100 calls.
 
 ### Usage
 Add `rtrace` as a dependency in `rebar.config`
