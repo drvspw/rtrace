@@ -1,0 +1,21 @@
+{application, rtrace,
+ [{description, "An OTP application with root supervisor"},
+  {vsn, {cmd, "./ebump current"}},
+  {registered, []},
+  {mod, {'rtrace', []}},
+  {applications,
+   [kernel,
+    stdlib,
+    recon,
+    uuid,
+    jsone,
+    elli
+   ]},
+
+  {env,[]},
+  {modules, []},
+
+  {contributors, []},
+  {licenses, ["Apache 2.0"]},
+  {links, [{"Github", "https://github.com/drvspw/rtrace.git"}]}
+ ]}.
