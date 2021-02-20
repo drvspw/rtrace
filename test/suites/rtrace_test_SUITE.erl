@@ -168,4 +168,4 @@ rtrace_logs_api_test(_Config) ->
 %%=================================================
 api_url(Path) ->
   Port = application:get_env(rtrace, http_port, ?RTRACE_PORT),
-  "http://localhost:" ++ integer_to_list(Port) ++ Path.
+  "http://localhost:" ++ integer_to_list(Port) ++ "/api/v1" ++ Path.

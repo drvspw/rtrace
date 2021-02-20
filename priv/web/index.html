@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="css/lib.min.css">
+    <title>Erlang Call Tracer</title>
+  </head>
+  <body>
+    <div class="ui container">
+      <!-- Navigation Menu -->
+      <div class="ui four item inverted orange menu">
+	<div class="item left">
+          <i class="money bill alternate outline icon"></i>
+          <a class="menu-item" href="/">Trace Calls</a>
+	</div>
+      </div>
+
+      <!-- Application Root -->
+      <div id="app"></div>
+    </div>
+
+    <!-- templates -->
+    <!-- Error Template -->
+    <script id="error-template" type="text/x-handlebars-template">
+  <div class="ui {{color}} inverted segment" style="height:250px;">
+    <br>
+    <h2 class="ui center aligned icon header">
+      <i class="exclamation triangle icon"></i>
+      <div class="content">
+        {{title}}
+        <div class="sub header">{{message}}</div>
+      </div>
+    </h2>
+  </div>
+    </script>
+
+<!-- Trace Template -->
+    <script id="trace-template" type="text/x-handlebars-template">
+    <h1 class="ui header">Trace</h1>
+    <hr>
+  <div id="trace-calls-page" class="ui basic loading segment">
+    <form class="ui form">
+      <div class="three fields">
+        <div class="field">
+    <label>Module</label>
+    <input type="text" name="mod" id="mod" placeholder="Enter Module">
+        </div>
+        <div class="field">
+              <label>Function</label>
+	      <input type="text" name="fun" id="fun" placeholder="Enter Function">
+        </div>
+        <div class="field">
+          <label>#Calls</label>
+          <input type="number" name="calls" id="calls" value="10" placeholder="Enter #calls">
+        </div>
+      </div>
+      <div class="ui teal submit button start-trace">Start</div>
+      <div class="ui error message"></div>
+    </form>
+    <br>
+    </div>
+
+    <!-- container for trace logs -->
+    <h1 class="ui header">Trace Logs</h1>
+    <hr>
+    <div id="trace-logs-header"></div>
+    <div id="trace-logs" style="margin-top: 5px;"></div>
+</script>
+
+
+<script id="trace-logs-header-template" type="text/x-handlebars-template">
+  <div>
+    {{#if uuid}}
+  Request UUID: {{uuid}}. Tracing {{mod}}:{{fun}}() for {{calls}} calls.
+      <button class="ui labeled icon button submit teal refresh-trace">
+      <i class="refresh icon"></i>
+      Refresh
+  </button>
+        {{/if}}
+</div>
+  </script>
+
+      <script id="trace-logs-template" type="text/x-handlebars-template">
+	      <table class="ui celled selectable inverted table">
+      <tbody>
+        {{#each logs}}
+        <tr>
+          <td>{{this}}</td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+</script>
+
+    <!-- JS Library Dependencies -->
+    <script src="js/lib.min.js"></script>
+    <script src="js/app.js"></script>
+  </body>
+</html>

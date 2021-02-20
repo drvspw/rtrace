@@ -9,13 +9,71 @@ Add `rtrace` as a dependency in `rebar.config`
 	]}.
 ```
 
-By default, the application listens on port 15000 for incoming api requests. This port can be customized by setting `http_port` value in `sys.config`
+By default, the application listens on port 15000 for incoming api requests. This port can be customized by setting `http_port` value in `sys.config`. The application can also be restricted to listen only on a specific ip address by setting `http_host_ip` property.
 ```erlang
 [
 	{rtrace, [
-		{http_port, 17000} %% another port
+		{http_port, 17000}, %% a different port
+		{http_host_ip, {127, 0, 0, 1}} %% listen only on localhost
 		]}
 ].
 ```
+
+#### API
+The application exposes the following api's.
+<table>
+  <tr><td colspan="2"><strong>POST /api/v1/trace</strong></td></tr>
+
+  <tr>
+    <td><strong>Description</strong></td>
+	<td>Start trace</td>
+  </tr>
+  <tr>
+	<td><strong>Request</strong></td>
+	<td>
+<pre>
+{
+  "mod": "maps",
+  "fun": "get",
+  "calls": 10
+}
+</pre>
+	</td>
+  </tr>
+  <tr>
+	<td><strong>Response</strong></td>
+	<td>
+<pre>
+"cfa0b15d-0ecb-4486-8768-8bf1755a5c92"
+</pre>
+	</td>
+  </tr>
+</table>
+
+<table>
+  <tr><td colspan="2"><strong>GET /api/v1/logs/:uuid</strong></td></tr>
+
+  <tr>
+    <td><strong>Description</strong></td>
+	<td>Get logs for specified trace request</td>
+  </tr>
+  <tr>
+	<td><strong>Response</strong></td>
+	<td>
+<pre>
+[
+	"...",
+	"..."
+]
+</pre>
+The response is a list of trace logs
+	</td>
+  </tr>
+</table>
+
+**NOTE:** All requests and responses are encoded as JSON.
+
+#### UX
+Navigate to `http://localhost:15000` in your browser. You can now start tracing and view trace logs from the UI. Some screenshots are attached:
 
 ### Contributing
