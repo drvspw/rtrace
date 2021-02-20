@@ -74,6 +74,11 @@ The response is a list of trace logs
 **NOTE:** All requests and responses are encoded as JSON.
 
 #### UX
-Navigate to `http://localhost:15000` in your browser. You can now start tracing and view trace logs from the UI. Some screenshots are attached:
+Navigate to `http://localhost:15000` in your browser. You can now start tracing and view trace logs from the UI.
+- Press `Start` to start trace after entering module and function names.
+- The page will refresh and display a `Refresh` button along with some information.
+- Press `Refresh` button to display the trace logs. The logs would not refresh if `recon` trace limit has been tripped or the function under trace is never called.
+
+[Screenshot](https://raw.githubusercontent.com/drvspw/rtrace/blobs/rtrace.png)
 
 ### Contributing
