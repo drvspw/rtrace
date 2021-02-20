@@ -109,8 +109,9 @@ init([]) ->
 
   %% http listener
   Port = application:get_env(?MODULE, http_port, ?RTRACE_PORT),
+  HostIp = application:get_env(?MODULE, http_host_ip, ?RTRACE_HOST_IP),
   Options = [
-             {ip, {127, 0, 0, 1}},
+             {ip, HostIp},
              {port, Port},
              {callback, rtrace_http}
             ],

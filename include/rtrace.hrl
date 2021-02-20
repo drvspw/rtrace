@@ -21,6 +21,7 @@
 -define('__rtrace_hrl__', true).
 
 -define(RTRACE_PORT, 15000).
+-define(RTRACE_HOST_IP, {0, 0, 0, 0}).
 -define(RTRACE_LOG_TABLE, rtrace_log_table).
 -define(RTRACE_DEFAULT_CALLS, 10).
 -define(RTRACE_MAX_CALLS, 100).

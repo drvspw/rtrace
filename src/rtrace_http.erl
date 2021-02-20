@@ -34,6 +34,8 @@
         ]).
 
 -define(ATOM(X), binary_to_existing_atom(X, latin1)).
+-define(INDEX_PAGE, <<"index.html">>).
+-define(API_VSN, <<"v1">>).
 %%===========================================================================
 %% elli Callbacks
 %%===========================================================================
@@ -46,7 +48,7 @@ handle_event(_Event, _Data, _Args) ->
 %%===========================================================================
 %% private functions
 %%===========================================================================
-handle('POST', [<<"trace">>], Req) ->
+handle('POST', [<<"api">>, ?API_VSN, <<"trace">>], Req) ->
   %% Get the request body and parse json
   ReqBody = elli_request:body(Req),
   Request = parse_trace_request(ReqBody),
@@ -57,14 +59,31 @@ handle('POST', [<<"trace">>], Req) ->
   %% generate response
   generate_response(Result);
 
-handle('GET', [<<"logs">>, UUID], _Req) ->
+handle('GET', [<<"api">>, ?API_VSN, <<"logs">>, UUID], _Req) ->
   %% lookup logs from ets table
   LogItems = rtrace_ets:logs(UUID),
   Logs = [L || {_, L} <- LogItems],
   {200, [], jsone:encode(Logs)};
 
-handle(_, _, _Req) ->
-  {404, [], <<"">>}.
+handle(_, [<<"api">>|_], _Req) ->
+  %% api path not found
+  {404, [], <<"">>};
+
+handle('GET', [], Req) ->
+  handle('GET', [?INDEX_PAGE], Req);
+
+handle('GET', [?INDEX_PAGE] = Path, Req) ->
+  serve_file(Path, Req);
+
+handle('GET', [<<"css">>|_] = Path, Req) ->
+  serve_file(Path, Req);
+
+handle('GET', [<<"js">>|_] = Path, Req) ->
+  serve_file(Path, Req);
+
+handle(_, _, Req) ->
+  %% serve index.html and hope the client js displays the error message
+  serve_file([?INDEX_PAGE], Req).
 
 handle_trace_request({Mod, Fun, Calls}) ->
   try
@@ -106,3 +125,16 @@ ceil_calls(Calls) when Calls =< 0 ->
   ?RTRACE_DEFAULT_CALLS;
 ceil_calls(Calls) ->
   Calls.
+
+serve_file(Path, _Req) ->
+  FilePath = web_file(Path),
+  {ok, [], {file, FilePath}}.
+
+web_file(Path) ->
+  File = filename:join([rtrace:priv_dir(), <<"web">>|Path]),
+  case filelib:is_regular(File) of
+    true ->
+      File;
+    _ ->
+      filename:join([rtrace:priv_dir(), <<"web">>, ?INDEX_PAGE])
+  end.
